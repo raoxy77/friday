@@ -20,6 +20,13 @@ public class RoleUserController {
     @Autowired
     RoleUserServ roleUserServ;
 
+    /**
+     * 根据用户id查询角色
+     *
+     * @Author: rxy
+     * @Param: [userId]用户id
+     * @return: {@link Results< SysRoleUser>}
+     */
     @PostMapping("/getRoleUserByUserId")
     @ResponseBody
     public Results<SysRoleUser> getRole(Integer userId) {
