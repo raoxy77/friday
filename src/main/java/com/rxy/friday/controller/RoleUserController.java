@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
+ * 用户角色关系表
  * @author rxy
  * @date 2020/2/22  21:06  星期六
  **/
