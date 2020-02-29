@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rxy.friday.dao.RoleUserDao">
+
+    <!--    List<SysUser> getAllUsersByPage();  -->
+    <!--    <select id="getAllUsersByPage" resultType="com.rxy.friday.model.SysUser">-->
+    <!--        select * from sys_user-->
+    <!--    </select>-->
+    <update id="updateSysRoleUser">
+        update sys_role_user t
+        <set>
+            <if test="roleId != null">
+                roleId = #{roleId},
+            </if>
+        </set>
+        where t.userId = #{userId}
+    </update>
+
+    <delete id="deleteRoleUserByUserIdOrRoleId">
+        delete from sys_role_user
+        where
+        <if test="userId != null">userId = #{userId}</if>
+        <if test="roleId != null">roleId = #{roleId}</if>
+    </delete>
+</mapper>

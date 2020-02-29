@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Friday-System</title>
+    <header th:replace="header::html"></header>
+</head>
+<body>
+<div class="x-nav">
+          <span class="layui-breadcrumb">
+            <a href="">首页</a>
+            <a href="">用户管理</a>
+            <a>
+                <cite>用户列表</cite></a>
+          </span>
+    <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right"
+       href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:30px">ဂ</i></a>
+</div>
+
+<div class="layui-fluid">
+    <div class="layui-row  layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body ">
+                    <form class="layui-form  layui-col-space5">
+                        <div class="layui-inline layui-show-xs-block">
+                            <input type="text" name="username" placeholder="请输入用户名" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-inline layui-show-xs-block">
+                            <button class="layui-btn" lay-submit="" lay-filter="search"><i
+                                    class="layui-icon">&#xe615;</i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="layui-card-header">
+                    <button class="layui-btn layui-btn-danger delAll_btn" onclick="delAll()" permission="sys:user:del">
+                        <i
+                                class="layui-icon"></i>批量删除
+                    </button>
+                    <button class="layui-btn" onclick="xadmin.open('添加用户','/user/add')" permission="sys:user:add"><i
+                            class="layui-icon"></i>添加用户
+                    </button>
+                </div>
+
+                <div class="layui-card-body ">
+                    <table class="layui-hide" id="table" lay-filter="member"></table>
+                </div>
+
+                <div class="layui-card-body ">
+                    <script type="text/html" id="barDemo">
+                        <a class="layui-btn layui-btn-xs" lay-event="edit" permission="sys:user:edit">编辑</a>
+                        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"
+                           permission="sys:user:del">删除</a>
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+
+    /**$("$delAll_btn").on('click', function () {
+        //获取选中状态            
+        var checkStatus = table.checkStatus('table');
+        //获取选中数量
+        var selectCount = checkStatus.data.length;
+        if (selectCount == 0) {
+            layer.msg('批量删除至少选中一项数据', function () {
+            });
+            return false;
+        }
+        layer.confirm('真的要删除选中的项吗？', function (index) {
+            layer.close(index);
+            index = layer.load(1, {shade: [0.1, '#fff']});
+
+            var isStr = "";
+            for (var i = 0; i < selectCount; i++) {
+                isStr = isStr + "," + checkStatus.data[i].id;
+            }
+            // $.ajax({
+            //     type: 'post',
+            //     data: {"isStr": isStr},
+            //     url: '${base}/testDel/delAll.htm',
+            //     success: function (data) {
+            //         if (data.code == 0) {
+            //             $('#seach').click();
+            //         }
+            //         layer.close(index);
+            //         layer.msg(data.msg);
+            //     }, error: function (code) {
+            //         parent.layer.msg('操作失败!', {icon: 5, time: 1000});
+            //     }
+            // });
+        })
+    });*/
+
+
+    layui.use('table', function () {
+        var table = layui.table,
+            form = layui.form;
+        table.render({
+            elem: '#table'
+            , url: '/user/list' //数据接口
+            , page: true //开启分页
+            , response: {
+                countName: 'count', //规定数据总数的字段名称，默认：count
+                dataName: 'datas' //规定数据列表的字段名称，默认：data
+            }
+            , cols: [
+                [ //表头
+                    {type: 'checkbox', fixed: 'left'}
+                    , {field: 'id', title: 'ID', align: 'center', width: 50}
+                    , {field: 'username', title: '用户名'}
+                    , {field: 'telephone', title: '手机'}
+                    , {
+                    field: 'status', title: '状态', templet: function (d) {
+                        return d.status == '1' ? "启动" : "禁用";
+                    }
+                }
+                    , {field: 'birthday', title: '生日'}
+                    /*, {
+                    field: 'sex', title: '性别', templet: function (d) {
+                        return (d.status == '1' ? "男" : (d.status == '0' ? "女":"未知"));
+                    }
+                }*/
+                    , {title: '操作', toolbar: '#barDemo'}
+                ]
+            ],
+            done: function () {
+                checkPermission()
+            }
+        });
+
+        //监听工具条
+        table.on('tool(member)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+
+                    $.ajax({
+                        url: "/user/delete",
+                        type: "GET",
+                        data: {id: data.id},
+                        dataType: 'json',
+                        success: function (result) {
+                            layer.alert("删除成功", {icon: 1}, function (index1) {
+                                layer.close(index1);
+                                //xadmin.father_reload();
+                                table.reload('table');
+                            });
+                        },
+                    });
+
+                });
+            } else if (obj.event === 'edit') {
+                xadmin.open('编辑用户信息', '/user/edit/?id=' + data.id);
+            }
+        });
+
+
+        //搜索
+        form.on('submit(search)', function (data) {
+            var username = data.field.username;
+            table.render({
+                elem: '#table'
+                , url: '/user/findUserByFuzzyUserName' //数据接口
+                , page: true //开启分页
+                , where: {
+                    "userName": username
+                }
+                , response: {
+
+                    countName: 'count', //规定数据总数的字段名称，默认：count
+                    dataName: 'datas' //规定数据列表的字段名称，默认：data
+                }
+                , cols: [
+                    [ //表头
+                        {type: 'checkbox', fixed: 'left'}
+                        , {field: 'id', title: 'ID', align: 'center', width: 50}
+                        , {field: 'username', title: '用户名'}
+                        , {field: 'telephone', title: '手机'}
+                        /*, {
+                        field: 'status', title: '状态', templet: function (d) {
+                            return d.status == '1' ? "启动" : "禁用";
+                        }
+                    }*/
+                        , {field: 'birthday', title: '生日'}
+                        , {
+                        field: 'sex', title: '性别', templet: function (d) {
+                            return (d.status == '1' ? "男" : (d.status == '0' ? "女" : "未知"));
+                        }
+                    }
+                        , {title: '操作', toolbar: '#barDemo'}
+                    ]
+                ]
+            });
+            return false;
+        });
+        checkPermission();
+    });
+</script>
+
+</html>
